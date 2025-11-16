@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Shield, Award, Clock, Star } from "lucide-react";
+import { Shield, Award, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import heroImage from "@/assets/hero-door.jpg";
@@ -40,24 +40,6 @@ const Home = () => {
       icon: Clock,
       title: "Lifetime Warranty",
       description: "Comprehensive warranty covering all manufacturing defects",
-    },
-  ];
-
-  const testimonials = [
-    {
-      name: "Maria K.",
-      rating: 5,
-      text: "Absolutely stunning doors! The quality exceeded our expectations and transformed our home.",
-    },
-    {
-      name: "John D.",
-      rating: 5,
-      text: "Professional service from consultation to installation. Highly recommended!",
-    },
-    {
-      name: "Sofia A.",
-      rating: 5,
-      text: "Beautiful craftsmanship and attention to detail. Worth every penny!",
     },
   ];
 
@@ -153,27 +135,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-12">What Our Clients Say</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow">
-                <CardContent className="pt-8 pb-8">
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 fill-accent text-accent" />
-                    ))}
-                  </div>
-                  <p className="text-muted-foreground mb-4 italic">"{testimonial.text}"</p>
-                  <p className="font-semibold">{testimonial.name}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* CTA Banner */}
       <section className="py-20 bg-primary text-primary-foreground px-4">
