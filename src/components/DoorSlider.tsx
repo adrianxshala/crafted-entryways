@@ -59,7 +59,8 @@ const DoorSlider = () => {
             Unsere Meisterwerke
           </h2>
           <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto font-light">
-            Entdecken Sie unsere handgefertigten Türen - jede einzigartig und perfekt
+            Entdecken Sie unsere handgefertigten Türen - jede einzigartig und
+            perfekt
           </p>
         </motion.div>
 
@@ -209,4 +210,3 @@ const DoorSlider = () => {
 };
 
 export default DoorSlider;
-
