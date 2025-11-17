@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Shield, Award, Clock, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { motion } from "framer-motion";
 import DoorSlider from "@/components/DoorSlider";
 import heroImage from "@/assets/hero-door.jpg";
@@ -19,6 +21,8 @@ import doorSlider from "@/assets/door-slider.jpg";
 
 const Home = () => {
   const [filter, setFilter] = useState("Alle");
+  const debouncedFilter = useDebounce(filter, 150);
+  const prefersReducedMotion = useReducedMotion();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -95,10 +99,13 @@ const Home = () => {
     },
   ];
 
-  const filteredDoors =
-    filter === "Alle"
-      ? doors
-      : doors.filter((door) => door.category === filter);
+  const filteredDoors = useMemo(
+    () =>
+      debouncedFilter === "Alle"
+        ? doors
+        : doors.filter((door) => door.category === debouncedFilter),
+    [debouncedFilter]
+  );
 
   const features = [
     {
@@ -191,12 +198,28 @@ const Home = () => {
           {/* Main Title with Split Animation */}
           <div className="mb-4 sm:mb-6">
             <motion.span
-              initial={{ opacity: 0, y: -80, filter: "blur(20px)" }}
-              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              initial={
+                prefersReducedMotion
+                  ? { opacity: 0 }
+                  : {
+                      opacity: 0,
+                      transform: "translateY(-80px)",
+                      filter: "blur(20px)",
+                    }
+              }
+              whileInView={
+                prefersReducedMotion
+                  ? { opacity: 1 }
+                  : {
+                      opacity: 1,
+                      transform: "translateY(0)",
+                      filter: "blur(0px)",
+                    }
+              }
               viewport={{ once: true }}
               transition={{
-                delay: 0.3,
-                duration: 1,
+                delay: prefersReducedMotion ? 0 : 0.3,
+                duration: prefersReducedMotion ? 0.01 : 1,
                 ease: [0.25, 0.1, 0.25, 1],
               }}
               className="inline-block"
@@ -222,12 +245,28 @@ const Home = () => {
             </motion.span>
             <br className="hidden sm:block" />
             <motion.span
-              initial={{ opacity: 0, y: -80, filter: "blur(20px)" }}
-              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              initial={
+                prefersReducedMotion
+                  ? { opacity: 0 }
+                  : {
+                      opacity: 0,
+                      transform: "translateY(-80px)",
+                      filter: "blur(20px)",
+                    }
+              }
+              whileInView={
+                prefersReducedMotion
+                  ? { opacity: 1 }
+                  : {
+                      opacity: 1,
+                      transform: "translateY(0)",
+                      filter: "blur(0px)",
+                    }
+              }
               viewport={{ once: true }}
               transition={{
-                delay: 0.5,
-                duration: 1,
+                delay: prefersReducedMotion ? 0 : 0.5,
+                duration: prefersReducedMotion ? 0.01 : 1,
                 ease: [0.25, 0.1, 0.25, 1],
               }}
               className="inline-block"
@@ -256,9 +295,21 @@ const Home = () => {
 
           {/* Subtitle */}
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.8, ease: "easeOut" }}
+            initial={
+              prefersReducedMotion
+                ? { opacity: 0 }
+                : { opacity: 0, transform: "translateY(20px)" }
+            }
+            animate={
+              prefersReducedMotion
+                ? { opacity: 1 }
+                : { opacity: 1, transform: "translateY(0)" }
+            }
+            transition={{
+              delay: prefersReducedMotion ? 0 : 0.6,
+              duration: prefersReducedMotion ? 0.01 : 0.8,
+              ease: "easeOut",
+            }}
             className="text-base sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-8 max-w-2xl mx-auto opacity-90 px-2"
           >
             Premium Innentüren, die Ihren Raum aufwerten.

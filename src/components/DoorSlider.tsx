@@ -1,6 +1,8 @@
+import { memo } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import { motion } from "framer-motion";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -10,7 +12,8 @@ import doorGlass from "@/assets/door-glass.jpg";
 import doorRustic from "@/assets/door-rustic.jpg";
 import doorFrench from "@/assets/door-french.jpg";
 
-const DoorSlider = () => {
+const DoorSlider = memo(() => {
+  const prefersReducedMotion = useReducedMotion();
   const doors = [
     {
       id: 1,
@@ -39,12 +42,17 @@ const DoorSlider = () => {
     },
   ];
 
+  // Calculate if loop should be enabled based on number of slides
+  // Loop requires at least slidesPerView * 2 slides to work properly
+  const minSlidesForLoop = 4; // Maximum slidesPerView in breakpoints
+  const shouldLoop = doors.length >= minSlidesForLoop * 2;
+
   return (
     <motion.section
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: prefersReducedMotion ? 0.01 : 0.6 }}
       className="py-12 sm:py-16 md:py-20 bg-background relative overflow-hidden"
     >
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
@@ -79,7 +87,7 @@ const DoorSlider = () => {
               dynamicBullets: false,
             }}
             navigation={true}
-            loop={true}
+            loop={shouldLoop}
             spaceBetween={24}
             slidesPerView={1.2}
             breakpoints={{
@@ -207,6 +215,8 @@ const DoorSlider = () => {
       </div>
     </motion.section>
   );
-};
+});
+
+DoorSlider.displayName = "DoorSlider";
 
 export default DoorSlider;
