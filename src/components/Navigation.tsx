@@ -45,13 +45,13 @@ const Navigation = () => {
           ease: [0.25, 0.1, 0.25, 1],
           opacity: { duration: 0.6 },
         }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 mx-4 mt-2 rounded-xl backdrop-blur-md ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 mx-2 sm:mx-4 mt-2 rounded-xl backdrop-blur-md ${
           isScrolled
             ? "bg-background/10 shadow-lg border border-border/20"
             : "bg-background/10 border border-border/10"
         }`}
       >
-        <div className="container mx-auto p-2">
+        <div className="container mx-auto p-1 sm:p-2 md:p-2">
           <div className="flex items-center justify-between">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
@@ -61,7 +61,7 @@ const Navigation = () => {
                 <img
                   src="/logo.png"
                   alt="Türbau Interior Design"
-                  className="h-10 sm:h-10 md:h-10 w-auto object-contain"
+                  className="h-14 sm:h-16 md:h-10 w-auto object-contain"
                 />
               </Link>
             </motion.div>
@@ -102,7 +102,7 @@ const Navigation = () => {
 
             {/* Mobile Menu Button */}
             <motion.button
-              className="md:hidden"
+              className="md:hidden p-2"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               whileTap={{ scale: 0.9 }}
             >
@@ -115,7 +115,7 @@ const Navigation = () => {
                     exit={{ rotate: 90, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <X size={24} />
+                    <X size={28} />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -125,7 +125,7 @@ const Navigation = () => {
                     exit={{ rotate: -90, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Menu size={24} />
+                    <Menu size={28} />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -154,52 +154,71 @@ const Navigation = () => {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="fixed top-0 right-0 h-full w-64 bg-background/10 backdrop-blur-md border-l border-border/20 shadow-xl z-[70] md:hidden overflow-y-auto"
+              className="fixed top-0 right-0 h-full w-64 bg-background/10 backdrop-blur-xl border-l border-accent/20 shadow-2xl z-[70] md:hidden overflow-y-auto"
             >
-              <div className="p-6">
-                {/* Close Button */}
-                <div className="flex justify-end mb-8">
+              <div className="flex flex-col h-full">
+                {/* Header with Logo */}
+                <div className="flex items-center justify-between p-4 border-b border-border/10">
+                  <Link
+                    to="/"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center"
+                  >
+                    <img
+                      src="/logo.png"
+                      alt="Türbau Interior Design"
+                      className="h-8 w-auto object-contain"
+                    />
+                  </Link>
                   <motion.button
                     onClick={() => setIsMobileMenuOpen(false)}
                     whileTap={{ scale: 0.9 }}
-                    className="p-2"
+                    className="p-1.5 rounded-lg hover:bg-accent/10 transition-colors"
                   >
-                    <X size={24} />
+                    <X size={20} className="text-foreground" />
                   </motion.button>
                 </div>
 
                 {/* Menu Items */}
-                <div className="flex flex-col gap-4">
-                  {navLinks.map((link, index) => (
-                    <motion.div
-                      key={link.path}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1, duration: 0.3 }}
-                    >
-                      <Link
-                        to={link.path}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={`block py-2 text-base font-medium transition-colors hover:text-accent ${
-                          location.pathname === link.path
-                            ? "text-accent"
-                            : "text-foreground"
-                        }`}
+                <div className="flex-1 px-3 py-4">
+                  <div className="flex flex-col gap-0.5">
+                    {navLinks.map((link, index) => (
+                      <motion.div
+                        key={link.path}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.08, duration: 0.3 }}
                       >
-                        {link.name}
-                      </Link>
-                    </motion.div>
-                  ))}
+                        <Link
+                          to={link.path}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={`relative block py-3 px-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                            location.pathname === link.path
+                              ? "text-accent bg-accent/10 border-l-2 border-accent"
+                              : "text-foreground/80 hover:text-accent hover:bg-accent/5"
+                          }`}
+                        >
+                          {link.name}
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* CTA Button */}
+                <div className="p-4 border-t border-border/10">
                   <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: navLinks.length * 0.1, duration: 0.3 }}
-                    className="mt-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      delay: navLinks.length * 0.08 + 0.1,
+                      duration: 0.3,
+                    }}
                   >
                     <Button
                       variant="default"
                       size="sm"
-                      className="w-full"
+                      className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300"
                       asChild
                     >
                       <Link

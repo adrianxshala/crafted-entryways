@@ -1,6 +1,6 @@
-import { useState, memo, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Shield, Award, Clock, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import DoorSlider from "@/components/DoorSlider";
 import heroImage from "@/assets/hero-door.jpg";
 import doorModern from "@/assets/door-modern.jpg";
@@ -18,6 +18,131 @@ import doorGlass from "@/assets/door-glass.jpg";
 import doorRustic from "@/assets/door-rustic.jpg";
 import doorFrench from "@/assets/door-french.jpg";
 import doorSlider from "@/assets/door-slider.jpg";
+
+// Stacked Scroll Images Component - Professional Implementation
+interface Door {
+  id: number;
+  name: string;
+  material: string;
+  category: string;
+  image: string;
+}
+
+const StackedScrollImages = ({
+  doors,
+  prefersReducedMotion,
+}: {
+  doors: Door[];
+  prefersReducedMotion: boolean;
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"],
+  });
+
+  const totalImages = doors.length;
+  const scrollHeight = totalImages * 100; // 100vh per image
+
+  // Create all transforms at component level - professional implementation
+  const imageTransforms = doors.map((_, index) => {
+    const imageProgress = index / totalImages;
+    const nextImageProgress = (index + 1) / totalImages;
+
+    // Professional transition timing - smooth and visible
+    const fadeInStart = Math.max(0, imageProgress - 0.15);
+    const fadeInEnd = imageProgress + 0.05;
+    const fadeOutStart = nextImageProgress - 0.05;
+    const fadeOutEnd = Math.min(1, nextImageProgress + 0.15);
+
+    if (prefersReducedMotion) {
+      return {
+        opacity: useTransform(scrollYProgress, [0, 1], [1, 1]),
+        scale: useTransform(scrollYProgress, [0, 1], [1, 1]),
+        y: useTransform(scrollYProgress, [0, 1], [0, 0]),
+      };
+    }
+
+    // Opacity: Professional fade in/out with smooth transitions
+    const opacity = useTransform(
+      scrollYProgress,
+      [fadeInStart, fadeInEnd, fadeOutStart, fadeOutEnd],
+      [0, 1, 1, 0]
+    );
+
+    // Scale: Subtle professional zoom effect
+    const scale = useTransform(
+      scrollYProgress,
+      [fadeInStart, fadeInEnd, fadeOutStart, fadeOutEnd],
+      [0.9, 1, 1, 0.9]
+    );
+
+    // Y position: Professional slide from bottom - visible motion
+    const y = useTransform(
+      scrollYProgress,
+      [fadeInStart, fadeInEnd, fadeOutStart, fadeOutEnd],
+      [150, 0, 0, -150]
+    );
+
+    return { opacity, scale, y };
+  });
+
+  return (
+    <div ref={containerRef} className="relative">
+      {/* Scroll spacer - creates scroll space for stacking effect */}
+      <div className={`relative`} style={{ height: `${scrollHeight}vh` }}>
+        {/* Sticky container - all images stack here */}
+        <div className="sticky top-20 sm:top-24 h-[60vh] sm:h-[70vh] md:h-[80vh] overflow-hidden">
+          {doors.map((door, index) => {
+            const { opacity, scale, y } = imageTransforms[index];
+
+            return (
+              <motion.div
+                key={door.id}
+                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                style={{
+                  opacity,
+                  scale,
+                  y,
+                  zIndex: totalImages - index,
+                }}
+              >
+                <motion.div
+                  className="pointer-events-auto w-full max-w-sm mx-auto h-full"
+                  initial={false}
+                  whileHover={prefersReducedMotion ? {} : { scale: 1.02 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                >
+                  <Card className="group overflow-hidden hover:shadow-2xl transition-all duration-300 cursor-pointer h-full border-border/20">
+                    <div className="relative overflow-hidden aspect-[3/4] h-full">
+                      <motion.img
+                        src={door.image}
+                        alt={door.name}
+                        className="w-full h-full object-cover"
+                        whileHover={prefersReducedMotion ? {} : { scale: 1.08 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                    <CardContent className="p-4 sm:p-6 bg-background/98 backdrop-blur-md border-t border-border/10">
+                      <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground">
+                        {door.name}
+                      </h3>
+                      <p className="text-muted-foreground text-xs sm:text-sm">
+                        {door.material}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Home = () => {
   const [filter, setFilter] = useState("Alle");
@@ -80,7 +205,7 @@ const Home = () => {
       id: 4,
       name: "Rustikale Scheune",
       material: "Altholz",
-      category: "Holz",
+      category: "Klassisch",
       image: doorRustic,
     },
     {
@@ -106,25 +231,6 @@ const Home = () => {
         : doors.filter((door) => door.category === debouncedFilter),
     [debouncedFilter]
   );
-
-  const features = [
-    {
-      icon: Shield,
-      title: "Premium-Materialien",
-      description:
-        "Nur die feinsten Materialien für Langlebigkeit und Schönheit",
-    },
-    {
-      icon: Award,
-      title: "Experten-Handwerk",
-      description: "Meisterhandwerker mit jahrzehntelanger Holzbauerfahrung",
-    },
-    {
-      icon: Clock,
-      title: "Lebenslange Garantie",
-      description: "Umfassende Garantie für alle Herstellungsfehler",
-    },
-  ];
 
   return (
     <div className="min-h-screen">
@@ -364,154 +470,6 @@ const Home = () => {
       {/* Unsere Meisterwerke Slider Section */}
       <DoorSlider />
 
-      {/* Featured Doors Section */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.6 }}
-        className="py-12 sm:py-16 md:py-20 px-4 sm:px-6"
-      >
-        <div className="container mx-auto">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-3 sm:mb-4"
-          >
-            Unsere Türkollektion
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-center text-muted-foreground mb-6 sm:mb-8 text-sm sm:text-base"
-          >
-            Entdecken Sie die perfekte Tür für Ihr Zuhause
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8 sm:mb-12"
-          >
-            {["Alle", "Modern", "Klassisch", "Glas", "Holz"].map(
-              (category, index) => (
-                <motion.div
-                  key={category}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button
-                    variant={filter === category ? "default" : "outline"}
-                    onClick={() => setFilter(category)}
-                    className="text-xs sm:text-sm"
-                    size="sm"
-                  >
-                    {category}
-                  </Button>
-                </motion.div>
-              )
-            )}
-          </motion.div>
-
-          <motion.div
-            layout
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8"
-          >
-            {filteredDoors.map((door, index) => (
-              <motion.div
-                key={door.id}
-                layout
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -5 }}
-              >
-                <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer h-full">
-                  <div className="relative overflow-hidden aspect-[3/4]">
-                    <motion.img
-                      src={door.image}
-                      alt={door.name}
-                      className="w-full h-full object-cover"
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ duration: 0.5 }}
-                    />
-                  </div>
-                  <CardContent className="p-4 sm:p-6">
-                    <h3 className="text-lg sm:text-xl font-semibold mb-2">
-                      {door.name}
-                    </h3>
-                    <p className="text-muted-foreground text-xs sm:text-sm">
-                      {door.material}
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </motion.section>
-
-      {/* Why Choose Us Section */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.6 }}
-        className="py-12 sm:py-16 md:py-20 bg-secondary/30 px-4 sm:px-6"
-      >
-        <div className="container mx-auto">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12"
-          >
-            Warum Portal Doors wählen
-          </motion.h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -5 }}
-              >
-                <Card className="text-center hover:shadow-lg transition-shadow h-full">
-                  <CardContent className="pt-6 sm:pt-8 pb-6 sm:pb-8 px-4 sm:px-6">
-                    <motion.div
-                      className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-accent/20 mb-3 sm:mb-4"
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <feature.icon className="w-6 h-6 sm:w-8 sm:h-8 text-accent" />
-                    </motion.div>
-                    <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">
-                      {feature.title}
-                    </h3>
-                    <p className="text-muted-foreground text-sm sm:text-base">
-                      {feature.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.section>
-
       {/* CTA Banner */}
       <motion.section
         initial={{ opacity: 0 }}
@@ -523,7 +481,7 @@ const Home = () => {
         {/* Background Image */}
         <motion.div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${heroImage})` }}
+          style={{ backgroundImage: `url(${doorModern})` }}
           animate={{
             scale: [1, 1.05, 1],
           }}
@@ -573,6 +531,71 @@ const Home = () => {
               <Link to="/contact">Beratung buchen</Link>
             </Button>
           </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Featured Doors Section */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6 }}
+        className="py-12 sm:py-16 md:py-20 px-4 sm:px-6"
+      >
+        <div className="container mx-auto">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-3 sm:mb-4"
+          >
+            Unsere Türkollektion
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-center text-muted-foreground mb-6 sm:mb-8 text-sm sm:text-base"
+          >
+            Entdecken Sie die perfekte Tür für Ihr Zuhause
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8 sm:mb-12"
+          >
+            {["Alle", "Modern", "Klassisch", "Glas"].map((category, index) => (
+              <motion.div
+                key={category}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button
+                  variant={filter === category ? "default" : "outline"}
+                  onClick={() => setFilter(category)}
+                  className="text-xs sm:text-sm"
+                  size="sm"
+                >
+                  {category}
+                </Button>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Scroll Stack Container */}
+          <StackedScrollImages
+            doors={filteredDoors}
+            prefersReducedMotion={prefersReducedMotion}
+          />
         </div>
       </motion.section>
 
